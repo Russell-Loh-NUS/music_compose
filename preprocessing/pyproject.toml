@@ -1,0 +1,30 @@
+[project]
+name = "music-5340"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "BRUTALMETHOD",email = "brutalmethod@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "setuptools (>=78.1.0,<79.0.0)",
+    "wheel (>=0.45.1,<0.46.0)",
+    "tensorflow (>=2.19.0,<3.0.0)",
+    "dm-tree (==0.1.8)",
+    "tensorflow-datasets (>=4.9.8,<5.0.0)",
+    "tensorflow-probability (>=0.25.0,<0.26.0)",
+    "note-seq (>=0.0.5,<0.0.6)"
+]
+
+[tool.poetry.dependencies]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+disableTaggedHints = true
