@@ -6,3 +6,6 @@ dependencies:
   - pip:
     - mido
     - numpy
+    - matplotlib
+    - seaborn
+    - pandas
