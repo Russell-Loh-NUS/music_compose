@@ -67,7 +67,6 @@ if __name__ == "__main__":
 
     output_dir = 'sample_outputs'
     # Create another MIDI file from all original notes
-    # TODO: BUG: Noticed issue that the duration is the twice of the original duration. But the highest track is ok
     output_fn_all = 'output_all.mid'
     output_path_all = os.path.join(output_dir, input_fn.split(".")[0] + "_" + output_fn_all)
     print("\nCreating MIDI with all original notes")
