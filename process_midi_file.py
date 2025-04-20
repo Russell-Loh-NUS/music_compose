@@ -3,7 +3,7 @@ from extract_midi import ExtractMidi
 from create_midi import CreateMidi
 
 def process_midi(file_path):
-    ticks_per_beat, tempo, notes = ExtractMidi.extract_midi_data(file_path) # Extract the midi data. The notes will be in order of start time.
+    ticks_per_beat, tempo, tempo_list, notes = ExtractMidi.extract_midi_data(file_path) # Extract the midi data. The notes will be in order of start time.
 
     pitch_sequence = []  # Sequence of note pitches
     duration_sequence = []  # Sequence of note durations

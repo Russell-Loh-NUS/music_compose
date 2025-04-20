@@ -8,6 +8,7 @@ class ExtractMidi:
         notes = {}
         midi_data = []
         tempo = sys.maxsize # Default tempo is 500000 microseconds
+        tempo_list = [] # Store all tempo messages
 
         count = 0
         for track in midi.tracks: # Loop through each track
@@ -17,6 +18,11 @@ class ExtractMidi:
             for message in track:
                 time_in_ticks += message.time  # Update cumulative time in ticks
 
+                if message.type == 'set_tempo':
+                    tempo_list.append({
+                        'tempo': message.tempo,
+                        'time': message.time
+                    })
                 if message.type == 'set_tempo' and message.tempo < tempo: # For now, we get the lowest tempo among all the tempo set. Potentially we should recalculate the duration using the tempo set (?)
                     tempo = message.tempo
                     print("Tempo:" + str(tempo) + ", Time: " + str(message.time))
@@ -50,4 +56,4 @@ class ExtractMidi:
                             'duration': message.time
                         })
 
-        return ticks_per_beat, tempo, midi_data
+        return ticks_per_beat, tempo, tempo_list, midi_data
