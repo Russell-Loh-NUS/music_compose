@@ -1,4 +1,5 @@
 from note_seq import (
+    BadTimeSignatureError,
     MelodyInferenceError,
     chord_inference,
     musicxml_file_to_sequence_proto,
@@ -47,16 +48,19 @@ def process_musicxml_and_infer_chords(input_filename, output_dir=None):
     split_sequence_tmp = sequences_lib.split_note_sequence_on_time_changes(ns)
     split_sequences = []
 
+    qpm = ns.tempos[0].qpm
     for split_sequence in split_sequence_tmp:
         # Get QPM and time signature for the current split
-        qpm = split_sequence.tempos[0].qpm
+        try:
+            qpm = split_sequence.tempos[0].qpm
+        except IndexError:
+            print(f"No tempo read for {input_filename}")
         time_signature = split_sequence.time_signatures[0]
 
         # Calculate the duration of one measure in seconds
         hop_size = (time_signature.numerator * 60 * 4) / (
             time_signature.denominator * qpm
         )
-
         split_sequences.extend(
             sequences_lib.split_note_sequence(split_sequence, hop_size)
         )
@@ -72,6 +76,9 @@ def process_musicxml_and_infer_chords(input_filename, output_dir=None):
             )  # or any other steps_per_quarter
             quantized_sequences.append(quantized_seq)
         except sequences_lib.QuantizationStatusError as e:
+            print(f"Quantization error: {e}")
+            continue
+        except BadTimeSignatureError as e:
             print(f"Quantization error: {e}")
             continue
 
