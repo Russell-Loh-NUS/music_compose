@@ -33,7 +33,7 @@ class VanillaFirstOrderMarkovChain:
             
         self.is_fitted = False
     
-    def calculate_transition_matrix(self, sequences: List[List[Any]]) -> None:
+    def calculate_transition_matrix(self, sequences: List[List[Any]], isPitch = True) -> None:
         """
         Calculate the transition matrix from sequences of states.
         
@@ -58,7 +58,18 @@ class VanillaFirstOrderMarkovChain:
                 
                 current_idx = self.state_to_idx[current_state]
                 next_idx = self.state_to_idx[next_state]
-                self.count_matrix[current_idx, next_idx] += 1
+
+                if isPitch:
+                    if current_state != next_state+2 and current_state != next_state-2: # Add bias towards whole tone
+                        self.count_matrix[current_idx, next_idx] += 1
+                    else:
+                        self.count_matrix[current_idx, next_idx] += 2
+                else:
+                    if abs(current_state - next_state) > 10: # Add bias for similar duration +- 10
+                        self.count_matrix[current_idx, next_idx] += 1
+                    else:
+                        self.count_matrix[current_idx, next_idx] += 2
+                # self.count_matrix[current_idx, next_idx] += 1
         
         # Calculate probabilities from counts
         self._calculate_probabilities()

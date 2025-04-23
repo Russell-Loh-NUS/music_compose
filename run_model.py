@@ -6,7 +6,7 @@ from model.VanillaSecondOrderMarkovChain import VanillaSecondOrderMarkovChain
 
 print(".: PROCESSING FILES :.")
 
-input_folder = 'midi_files/classical' # Specify path to folder
+input_folder = 'midi_files/random' # Specify path to folder
 input_file = 1 # Files processing starts from 1.mid
 input_fn = str(input_file) + ".mid"
 output_dir = "sample_outputs"
@@ -18,7 +18,12 @@ avg_tempo = 0
 pitch_sequence_list = []
 duration_sequence_list = []
 processed_file_counter = 0
+
+processed_file_limit = 99
 while os.path.exists(os.path.join(input_folder, input_fn)):
+    if processed_file_counter >= processed_file_limit: # If number of processed files = limit, break
+        break
+
     print("Processing File: " + input_fn)
     input_path = os.path.join(input_folder, input_fn)
     ticks_per_beat, tempo, total_notes, output_notes, output_notes_highest, pitch_sequence, duration_sequence = process_midi(input_path)
@@ -31,23 +36,34 @@ while os.path.exists(os.path.join(input_folder, input_fn)):
     input_fn = str(input_file) + ".mid"
     processed_file_counter += 1
 
-avg_ticks_per_beat = int(avg_ticks_per_beat/processed_file_counter)
 avg_tempo = int(avg_tempo/processed_file_counter)
+
+# Scale bpm of resulting song according to tempo
+target_bpm = 120
+avg_tempo_seconds = avg_tempo/pow(10, 6)
+ticks_per_beat = int(target_bpm/60 * (60/avg_tempo_seconds)) 
+# avg_ticks_per_beat = int(avg_ticks_per_beat/processed_file_counter)
 
 # get states
 pitch_set = set(pitch_sequence_list)
+print("Pitches: " + str(pitch_set)) # Pitches
+
+# Clip duration to be within range of 20 - 200
+duration_sequence_list = list(filter(lambda x: x >= 20 and x <= 250, duration_sequence_list))
 duration_set = set(duration_sequence_list)
+print("Duration Set: " + str(duration_set))
+
 
 print(".: PROCESSING MODEL :.")
 
 # first order
 pitch_model_fmc = VanillaFirstOrderMarkovChain(pitch_set)
-pitch_model_fmc.calculate_transition_matrix([pitch_sequence_list])
+pitch_model_fmc.calculate_transition_matrix([pitch_sequence_list], True)
 pitch_pred_seq_fmc = pitch_model_fmc.inference_prob(start_state=None, length=100, random_seed=42)
 pitch_model_fmc.visualize_transition_matrix(os.path.join(output_dir, "pitch_transition_matrix_fmc.png"))
 
 duration_model_fmc = VanillaFirstOrderMarkovChain(duration_set)
-duration_model_fmc.calculate_transition_matrix([duration_sequence_list])
+duration_model_fmc.calculate_transition_matrix([duration_sequence_list], False)
 duration_pred_seq_fmc = duration_model_fmc.inference_prob(start_state=None, length=100, random_seed=42)
 duration_model_fmc.visualize_transition_matrix(os.path.join(output_dir, "duration_transition_matrix_fmc.png"))
 
@@ -64,7 +80,7 @@ duration_model_smc.visualize_transition_matrix(os.path.join(output_dir, "duratio
 
 print("Model Processed.")
 print(".: CREATING MIDI :.")
-print("Ticks per beat: " + str(avg_ticks_per_beat))
+print("Ticks per beat: " + str(ticks_per_beat))
 print("Tempo: " + str(avg_tempo))
 
 # reconstruct midi file
@@ -80,8 +96,8 @@ for pitch, dur in zip(pitch_pred_seq_fmc, duration_pred_seq_fmc):
     fmc_seq.append({'event': 'note_off', 'note': pitch, 'start_time': current_time, 'duration': dur, 'velocity': 0})
     current_time += dur
 
-# TODO: QN: if we use multiple midi to train, what should be ticks_per_beat and tempo? - Set to average for now. Possibly tempo can also be chained (?)
-CreateMidi.create_midi_from_notes(fmc_output_path, fmc_seq, avg_ticks_per_beat, avg_tempo)
+# TODO: QN: if we use multiple midi to train, what should be ticks_per_beat and tempo? - Tempo set to avg, ticks_per_beat calculated based on tempo.
+CreateMidi.create_midi_from_notes(fmc_output_path, fmc_seq, ticks_per_beat, avg_tempo)
 
 # second order
 smc_output_name = input_fn.split(".")[0] + "_pred_smc.mid"
@@ -95,5 +111,5 @@ for pitch, dur in zip(pitch_pred_seq_smc, duration_pred_seq_smc):
     smc_seq.append({'event': 'note_off', 'note': pitch, 'start_time': current_time, 'duration': dur, 'velocity': 0})
     current_time += dur
 
-# TODO: QN: if we use multiple midi to train, what should be ticks_per_beat and tempo? - Set to average for now. Possibly tempo can also be chained (?)
-CreateMidi.create_midi_from_notes(smc_output_path, smc_seq, avg_ticks_per_beat, avg_tempo)
+# TODO: QN: if we use multiple midi to train, what should be ticks_per_beat and tempo? - Tempo set to avg, ticks_per_beat calculated based on tempo.
+CreateMidi.create_midi_from_notes(smc_output_path, smc_seq, ticks_per_beat, avg_tempo)

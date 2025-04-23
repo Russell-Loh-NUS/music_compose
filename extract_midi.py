@@ -5,6 +5,7 @@ class ExtractMidi:
     def extract_midi_data(file_path):
         midi = mido.MidiFile(file_path) # Load the MIDI file
         ticks_per_beat = midi.ticks_per_beat # Important for reconstructing back the midi
+        print('Ticks per beat: ' + str(ticks_per_beat))
         notes = {}
         midi_data = []
         tempo = sys.maxsize # Default tempo is 500000 microseconds
