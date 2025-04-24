@@ -6,9 +6,9 @@ from model.VanillaSecondOrderMarkovChain import VanillaSecondOrderMarkovChain
 
 print(".: PROCESSING FILES :.")
 
-input_folder = 'midi_files/random' # Specify path to folder
+input_folder = 'midi_files/training' # Specify path to folder
 input_file = 1 # Files processing starts from 1.mid
-input_fn = str(input_file) + ".mid"
+input_fn = '1 ('+ str(input_file) + ')' + ".mid"
 output_dir = "sample_outputs"
 
 # Process all midi files
@@ -19,7 +19,7 @@ pitch_sequence_list = []
 duration_sequence_list = []
 processed_file_counter = 0
 
-processed_file_limit = 99
+processed_file_limit = 999
 while os.path.exists(os.path.join(input_folder, input_fn)):
     if processed_file_counter >= processed_file_limit: # If number of processed files = limit, break
         break
@@ -33,13 +33,13 @@ while os.path.exists(os.path.join(input_folder, input_fn)):
     duration_sequence_list += duration_sequence
 
     input_file += 1
-    input_fn = str(input_file) + ".mid"
+    input_fn = '1 ('+ str(input_file) + ')' + ".mid"
     processed_file_counter += 1
 
 avg_tempo = int(avg_tempo/processed_file_counter)
 
 # Scale bpm of resulting song according to tempo
-target_bpm = 120
+target_bpm = 70
 avg_tempo_seconds = avg_tempo/pow(10, 6)
 ticks_per_beat = int(target_bpm/60 * (60/avg_tempo_seconds)) 
 # avg_ticks_per_beat = int(avg_ticks_per_beat/processed_file_counter)
@@ -48,11 +48,10 @@ ticks_per_beat = int(target_bpm/60 * (60/avg_tempo_seconds))
 pitch_set = set(pitch_sequence_list)
 print("Pitches: " + str(pitch_set)) # Pitches
 
-# Clip duration to be within range of 20 - 200
-duration_sequence_list = list(filter(lambda x: x >= 20 and x <= 250, duration_sequence_list))
+# Clip duration to be within range of 50 - 300
+duration_sequence_list = list(filter(lambda x: x >= 50 and x <= 300, duration_sequence_list))
 duration_set = set(duration_sequence_list)
 print("Duration Set: " + str(duration_set))
-
 
 print(".: PROCESSING MODEL :.")
 
@@ -60,6 +59,10 @@ print(".: PROCESSING MODEL :.")
 pitch_model_fmc = VanillaFirstOrderMarkovChain(pitch_set)
 pitch_model_fmc.calculate_transition_matrix([pitch_sequence_list], True)
 pitch_pred_seq_fmc = pitch_model_fmc.inference_prob(start_state=None, length=100, random_seed=42)
+# pitch_pred_seq_fmc = pitch_model_fmc.inference_prob(start_state=72, length=25, random_seed=42) # C
+# pitch_pred_seq_fmc += pitch_model_fmc.inference_prob(start_state=79, length=25, random_seed=42) # G
+# pitch_pred_seq_fmc += pitch_model_fmc.inference_prob(start_state=81, length=25, random_seed=42) # A
+# pitch_pred_seq_fmc += pitch_model_fmc.inference_prob(start_state=77, length=25, random_seed=42) # F
 pitch_model_fmc.visualize_transition_matrix(os.path.join(output_dir, "pitch_transition_matrix_fmc.png"))
 
 duration_model_fmc = VanillaFirstOrderMarkovChain(duration_set)
@@ -69,12 +72,12 @@ duration_model_fmc.visualize_transition_matrix(os.path.join(output_dir, "duratio
 
 # second order
 pitch_model_smc = VanillaSecondOrderMarkovChain(pitch_set)
-pitch_model_smc.calculate_transition_matrix([pitch_sequence_list])
+pitch_model_smc.calculate_transition_matrix([pitch_sequence_list], True)
 pitch_pred_seq_smc = pitch_model_smc.inference_prob(start_state=None, length=100, random_seed=42)
 pitch_model_smc.visualize_transition_matrix(os.path.join(output_dir, "pitch_transition_matrix_smc.png"))
 
 duration_model_smc = VanillaSecondOrderMarkovChain(duration_set)
-duration_model_smc.calculate_transition_matrix([duration_sequence_list])
+duration_model_smc.calculate_transition_matrix([duration_sequence_list], False)
 duration_pred_seq_smc = duration_model_smc.inference_prob(start_state=None, length=100, random_seed=42)
 duration_model_smc.visualize_transition_matrix(os.path.join(output_dir, "duration_transition_matrix_smc.png"))
 

@@ -60,12 +60,18 @@ class VanillaFirstOrderMarkovChain:
                 next_idx = self.state_to_idx[next_state]
 
                 if isPitch:
-                    if current_state != next_state+2 and current_state != next_state-2: # Add bias towards whole tone
-                        self.count_matrix[current_idx, next_idx] += 1
-                    else:
+                    # Add weight for transition to be within octave
+                    weight = (12-abs(current_state - next_state))/12
+                    if weight >= 0:
                         self.count_matrix[current_idx, next_idx] += 2
+                    else:
+                        self.count_matrix[current_idx, next_idx] += 1
+                    # if current_state != next_state+2 and current_state != next_state-2: # Add bias towards whole tone
+                    #     self.count_matrix[current_idx, next_idx] += 1
+                    # else:
+                    #     self.count_matrix[current_idx, next_idx] += 2
                 else:
-                    if abs(current_state - next_state) > 10: # Add bias for similar duration +- 10
+                    if abs(current_state - next_state) > 10: # Add weight for similar duration +- 10
                         self.count_matrix[current_idx, next_idx] += 1
                     else:
                         self.count_matrix[current_idx, next_idx] += 2
