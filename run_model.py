@@ -41,8 +41,7 @@ avg_tempo = int(avg_tempo/processed_file_counter)
 # Scale bpm of resulting song according to tempo
 target_bpm = 70
 avg_tempo_seconds = avg_tempo/pow(10, 6)
-ticks_per_beat = int(target_bpm/60 * (60/avg_tempo_seconds)) 
-# avg_ticks_per_beat = int(avg_ticks_per_beat/processed_file_counter)
+ticks_per_beat = int(target_bpm/60 * (60/avg_tempo_seconds))
 
 # get states
 pitch_set = set(pitch_sequence_list)
@@ -59,10 +58,6 @@ print(".: PROCESSING MODEL :.")
 pitch_model_fmc = VanillaFirstOrderMarkovChain(pitch_set)
 pitch_model_fmc.calculate_transition_matrix([pitch_sequence_list], True)
 pitch_pred_seq_fmc = pitch_model_fmc.inference_prob(start_state=None, length=100, random_seed=42)
-# pitch_pred_seq_fmc = pitch_model_fmc.inference_prob(start_state=72, length=25, random_seed=42) # C
-# pitch_pred_seq_fmc += pitch_model_fmc.inference_prob(start_state=79, length=25, random_seed=42) # G
-# pitch_pred_seq_fmc += pitch_model_fmc.inference_prob(start_state=81, length=25, random_seed=42) # A
-# pitch_pred_seq_fmc += pitch_model_fmc.inference_prob(start_state=77, length=25, random_seed=42) # F
 pitch_model_fmc.visualize_transition_matrix(os.path.join(output_dir, "pitch_transition_matrix_fmc.png"))
 
 duration_model_fmc = VanillaFirstOrderMarkovChain(duration_set)
@@ -92,14 +87,13 @@ fmc_output_name = input_fn.split(".")[0] + "_pred_fmc.mid"
 fmc_output_path = os.path.join(output_dir, fmc_output_name)
 fmc_seq = []
 current_time = 0
-# TODO: QN: What is the velocity? How to set it?
 velocity = 110 # this is the one in 1.mid. Also the velocity in 2.mid seems to be different for each note.
 for pitch, dur in zip(pitch_pred_seq_fmc, duration_pred_seq_fmc):
     fmc_seq.append({'event': 'note_on', 'note': pitch, 'start_time': current_time, 'duration': None, 'velocity': velocity})
     fmc_seq.append({'event': 'note_off', 'note': pitch, 'start_time': current_time, 'duration': dur, 'velocity': 0})
     current_time += dur
 
-# TODO: QN: if we use multiple midi to train, what should be ticks_per_beat and tempo? - Tempo set to avg, ticks_per_beat calculated based on tempo.
+# Tempo set to avg, ticks_per_beat calculated based on tempo.
 CreateMidi.create_midi_from_notes(fmc_output_path, fmc_seq, ticks_per_beat, avg_tempo)
 
 # second order
@@ -107,12 +101,11 @@ smc_output_name = input_fn.split(".")[0] + "_pred_smc.mid"
 smc_output_path = os.path.join(output_dir, smc_output_name)
 smc_seq = []
 current_time = 0
-# TODO: QN: What is the velocity? How to set it?
 velocity = 110 # this is the one in 1.mid. Also the velocity in 2.mid seems to be different for each note.
 for pitch, dur in zip(pitch_pred_seq_smc, duration_pred_seq_smc):
     smc_seq.append({'event': 'note_on', 'note': pitch, 'start_time': current_time, 'duration': None, 'velocity': velocity})
     smc_seq.append({'event': 'note_off', 'note': pitch, 'start_time': current_time, 'duration': dur, 'velocity': 0})
     current_time += dur
 
-# TODO: QN: if we use multiple midi to train, what should be ticks_per_beat and tempo? - Tempo set to avg, ticks_per_beat calculated based on tempo.
+# Tempo set to avg, ticks_per_beat calculated based on tempo.
 CreateMidi.create_midi_from_notes(smc_output_path, smc_seq, ticks_per_beat, avg_tempo)
