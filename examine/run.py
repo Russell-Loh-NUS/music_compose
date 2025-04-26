@@ -1,10 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from extract_midi import ExtractMidi
 
 class ExamineHarmonicDissonance():
-    def __init__(self, pitch_sequence, duration_sequence):
-        self.pitch_sequence = pitch_sequence
-        self.duration_sequence = duration_sequence
+    def __init__(self):
+        self.pitch_sequence = []
+        self.duration_sequence = []
+
 
     def set_up_harmonic_matrix(self):
         interval_weights = {
@@ -31,7 +33,16 @@ class ExamineHarmonicDissonance():
                 interval = abs(pitch1 - pitch2) % 12
                 self.score_matrix[i][j] = interval_weights.get(interval, 0)
     
-    def get_harmonic_dissonance(self, save_path=None):
+
+    def read_input_file(self, input_path):
+        _, _, _, notes = ExtractMidi.extract_midi_data(input_path) # Extract the midi data. The notes will be in order of start time.
+        for note in notes:
+            # Collect pitch and duration sequences
+            self.pitch_sequence.append(note['note'])
+            self.duration_sequence.append(note['duration'])
+
+
+    def get_harmonic_dissonance(self, midi_file_name, save_path=None):
         self.set_up_harmonic_matrix()
 
         pitches = []
@@ -50,11 +61,12 @@ class ExamineHarmonicDissonance():
                 continue
             # Calculate the harmonic score
             score = self.score_matrix[pitch_i-21][pitch_j-21]
-            print("Harmonic score between " + str(pitch_i) + " and " + str(pitch_j) + ": " + str(score))
+            # print("Harmonic score between " + str(pitch_i) + " and " + str(pitch_j) + ": " + str(score))
             scores.append(score)
-        print("Harmonic scores: " + str(sum(scores)/len(scores)))
+        print("Harmonic scores of " + midi_file_name + ": " + str(sum(scores)/len(scores)))
         self.plot_harmonic_scores(scores, save_path)
         
+
     def plot_harmonic_scores(self, scores, save_path=None):
         plt.figure(figsize=(10, 6))
         plt.plot(scores, marker='o', linestyle='-', color='blue')
@@ -65,7 +77,3 @@ class ExamineHarmonicDissonance():
         plt.tight_layout()
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            
-
-
-        
