@@ -42,7 +42,7 @@ class VanillaSecondOrderMarkovChain:
             
         self.is_fitted = False
     
-    def calculate_transition_matrix(self, sequences: List[List[Any]]) -> None:
+    def calculate_transition_matrix(self, sequences: List[List[Any]], isPitch = True) -> None:
         """
         Calculate the transition matrix from sequences of states.
         
@@ -71,7 +71,35 @@ class VanillaSecondOrderMarkovChain:
                     raise ValueError(f"State '{next_state}' not in the state space.")
                 
                 state_pair = (first_state, second_state)
-                self.count_matrix[state_pair][next_state] += 1
+
+                if isPitch:
+                    # Add weight transition to be within octave
+                    # First state
+                    weight = (12-abs(first_state - next_state))/12
+                    if weight >= 0:
+                        self.count_matrix[state_pair][next_state] += 2
+                    else:
+                        self.count_matrix[state_pair][next_state] += 1
+                    # Second state
+                    weight = (12-abs(second_state - next_state))/12
+                    if weight >= 0:
+                        self.count_matrix[state_pair][next_state] += 2
+                    else:
+                        self.count_matrix[state_pair][next_state] += 1
+                else:
+                    # First state
+                    if abs(first_state - next_state) > 100: # Add weight for similar duration +- 100
+                        self.count_matrix[state_pair][next_state] += 1
+                    else:
+                        self.count_matrix[state_pair][next_state] += 2
+                    # Second state
+                    if abs(second_state - next_state) > 100: # Add weight for similar duration +- 100
+                        self.count_matrix[state_pair][next_state] += 1
+                    else:
+                        self.count_matrix[state_pair][next_state] += 2
+                
+                # self.count_matrix[state_pair][next_state] += 1
+                
         
         # Calculate probabilities from counts
         self._calculate_probabilities()
