@@ -88,12 +88,12 @@ class VanillaSecondOrderMarkovChain:
                         self.count_matrix[state_pair][next_state] += 1
                 else:
                     # First state
-                    if abs(first_state - next_state) > 10: # Add weight for similar duration +- 10
+                    if abs(first_state - next_state) > 100: # Add weight for similar duration +- 100
                         self.count_matrix[state_pair][next_state] += 1
                     else:
                         self.count_matrix[state_pair][next_state] += 2
                     # Second state
-                    if abs(second_state - next_state) > 10: # Add weight for similar duration +- 10
+                    if abs(second_state - next_state) > 100: # Add weight for similar duration +- 100
                         self.count_matrix[state_pair][next_state] += 1
                     else:
                         self.count_matrix[state_pair][next_state] += 2

@@ -67,7 +67,7 @@ class VanillaFirstOrderMarkovChain:
                     else:
                         self.count_matrix[current_idx, next_idx] += 1
                 else:
-                    if abs(current_state - next_state) > 10: # Add weight for similar duration +- 10
+                    if abs(current_state - next_state) > 100: # Add weight for similar duration +- 100
                         self.count_matrix[current_idx, next_idx] += 1
                     else:
                         self.count_matrix[current_idx, next_idx] += 2
