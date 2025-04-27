@@ -42,7 +42,7 @@ class ExamineHarmonicDissonance():
             self.duration_sequence.append(note['duration'])
 
 
-    def get_harmonic_dissonance(self, midi_file_name, save_path=None):
+    def get_harmonic_dissonance(self, name, save_path=None):
         self.set_up_harmonic_matrix()
 
         pitches = []
@@ -63,17 +63,43 @@ class ExamineHarmonicDissonance():
             score = self.score_matrix[pitch_i-21][pitch_j-21]
             # print("Harmonic score between " + str(pitch_i) + " and " + str(pitch_j) + ": " + str(score))
             scores.append(score)
-        print("Harmonic scores of " + midi_file_name + ": " + str(sum(scores)/len(scores)))
-        self.plot_harmonic_scores(scores, save_path)
+        average_score = round(sum(scores) / len(scores), 4)
+
+        print("Harmonic scores of " + name + ": " + str(average_score))
+        self.plot_harmonic_scores(scores, "Harmonic scroes is " + str(average_score), save_path)
         
 
-    def plot_harmonic_scores(self, scores, save_path=None):
+    def plot_harmonic_scores(self, scores, label_content, save_path=None):
+        # plt.figure(figsize=(10, 6))
+        # plt.plot(scores, marker='o', linestyle='-', color='blue')
+        # plt.title("Harmonic Scores Over Time", fontsize=16)
+        # plt.xlabel("Time Step", fontsize=14)
+        # plt.ylabel("Harmonic Score", fontsize=14)
+        # plt.grid(True)
+        # plt.tight_layout()
+        # if save_path:
+        #     plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
         plt.figure(figsize=(10, 6))
         plt.plot(scores, marker='o', linestyle='-', color='blue')
         plt.title("Harmonic Scores Over Time", fontsize=16)
         plt.xlabel("Time Step", fontsize=14)
         plt.ylabel("Harmonic Score", fontsize=14)
         plt.grid(True)
+        
+        # Add text below the figure
+        plt.figtext(0.5,                  # x-position (0.5 = center)
+                    0.01,                 # y-position (just above bottom)
+                    label_content,        # Your text content
+                    ha='center',          # Horizontal alignment
+                    va='bottom',          # Vertical alignment
+                    fontsize=12)          # Font size
+        
         plt.tight_layout()
+        
+        # Adjust subplot to make room for the text
+        plt.subplots_adjust(bottom=0.15)  # Increase bottom margin
+        
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()  # Close the figure to prevent display if not needed
