@@ -3,7 +3,7 @@ from examine.run import ExamineHarmonicDissonance
 
 examiner = ExamineHarmonicDissonance()
 file_name_list = {
-    "original": os.path.join("midi_files/", "1 (5).mid"),
+    "original": os.path.join("midi_files/training", "1 (5).mid"),
     "result_first_order": os.path.join("demo_sample", "275_first_order.mid"),
     "result_second_order": os.path.join("demo_sample", "275_second_order.mid"),
     "result_post_processing": os.path.join("demo_sample/post_processing", "(5) First Order FMajor + Chord + Band.mid"),
